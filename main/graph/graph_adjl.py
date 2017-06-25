@@ -135,7 +135,7 @@ class Graph(dict):
             for cada_caminho in self.dfs_caminhos(vertice, alvo, caminho + [vertice]):
                 yield cada_caminho  # Gera uma lista de caminhos
 
-    def dijkstra(self, chave, destino, visitado=[], distancia={}, anterior={}):
+    def dijkstra(self, chave, destino, visitado=list(), distancia=dict(), anterior=dict()):
 
         if chave not in self:
             raise TypeError('A raiz da arvore de caminho mais curto nao pode ser encontrado no grafo')
@@ -156,7 +156,7 @@ class Graph(dict):
                 distancia[chave] = 0  # procura nos vizinhos
             for vizinho in self[chave].neighbors:
                 if vizinho not in visitado:
-                    nova_distancia = distancia[chave] + self[chave].neighbors[vizinho]
+                    nova_distancia = distancia[chave] + int(self[chave].neighbors[vizinho])
                     if nova_distancia < distancia.get(vizinho, float('inf')):
                         distancia[vizinho] = nova_distancia
                         anterior[vizinho] = chave
