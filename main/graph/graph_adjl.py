@@ -7,7 +7,7 @@ con: lenta para grafos densos
 
 class Vertex:
     def __init__(self, name):
-        self.name = name
+        self.name = str(name)
         self.neighbors = dict()
 
     def add_neighbor(self, v, weight=0):
@@ -79,49 +79,51 @@ class Graph(dict):
                 stack.extend(set(self[current].neighbors) - set(visited))
         return False
 
-    def r_dfs(self, start, target, visited=list()):
+    def r_dfs(self, start, target, visited=set()):
         """ Recursive Depth-First Search. """
 
-        if target in visited:       # Prevents the dfs from proceeding because it has already found the target.
-            return True
+        visited.add(start)
 
-        visited.append(start)
+        print(start, target, visited)
 
-        for v in set(self[start].neighbors) - set(visited):
-            if v not in visited:
-                self.r_dfs(v, target, visited)
+        for v in set(self[start].neighbors) - visited:
+            
+            self.r_dfs(v, target, visited)
 
-        return True if target in visited else False
+            if target in visited:
+                return True
 
-    def dfs_paths(self, start, target, path=list()):
-        if not path:
-            path = [start]
-        if start == target:
-            yield path
-        for v in set(self[start].neighbors) - set(path):
-            yield from self.dfs_paths(v, target, path + [v])
+        return False
 
-        def dfs_vertices(self, inicio, alvo, visitados=None):
-            ''' Retorna todos os nós que podem ser visitados a partir de um nó inicial '''
-            if visitados is None:
-                visitados = []
+    # def dfs_paths(self, start, target, path=list()):
+    #     if not path:
+    #         path = [start]
+    #     if start == target:
+    #         yield path
+    #     for v in set(self[start].neighbors) - set(path):
+    #         yield from self.dfs_paths(v, target, path + [v])
 
-            # Este IF vai parar a recursão quando achar o nó alvo, sem ele o algoritmo visitaria tos os os nós
-            if alvo in visitados:
-                return visitados
+    # def dfs_vertices(self, inicio, alvo, visitados=None):
+    #     ''' Retorna todos os nós que podem ser visitados a partir de um nó inicial '''
+    #     if visitados is None:
+    #         visitados = []
+    #
+    #     # Este IF vai parar a recursão quando achar o nó alvo, sem ele o algoritmo visitaria tos os os nós
+    #     if alvo in visitados:
+    #         return visitados
+    #
+    #     if inicio in visitados:
+    #         return
+    #
+    #     visitados.append(inicio)
+    #     # Percorre os vizinhos do vértice inicial/raiz
+    #     for cada in [x for x in self[inicio] if x not in visitados]:
+    #         # Chama recursivamente passando vinzinho e a lista de visitados
+    #         self.dfs_vertices(cada, alvo, visitados)
+    #
+    #     return visitados if alvo in visitados else False
 
-            if inicio in visitados:
-                return
-
-            visitados.append(inicio)
-            # Percorre os vizinhos do vértice inicial/raiz
-            for cada in [x for x in self[inicio] if x not in visitados]:
-                self.dfs_vertices(cada, alvo,
-                                  visitados)  # Chama recursivamente passando vinzinho e a lista de visitados
-
-            return visitados if alvo in visitados else False
-
-            # ----------------------------------------------------------
+    # ----------------------------------------------------------
 
     def dfs_caminhos(self, inicio, alvo, caminho=None):
 
