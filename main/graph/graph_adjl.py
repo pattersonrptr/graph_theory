@@ -4,7 +4,6 @@ pro: rápida e usa menos espaço para grafos esparsos
 con: lenta para grafos densos
 """
 
-
 class Vertex:
     def __init__(self, name):
         self.name = str(name)
@@ -25,6 +24,15 @@ class Graph(dict):
         else:
             return False
 
+    def rm_vertex(self, vertex):
+        if vertex in self:
+            for v in self[vertex].neighbors:
+                for u in self[v].neighbors:
+                    if u == vertex:
+                        self[v].neighbors.pop(vertex)
+                        break
+            self.pop(vertex)
+
     def add_edge(self, u, v, weight=0):
 
         if u in self and v in self:
@@ -36,6 +44,184 @@ class Graph(dict):
             return True
         else:
             return False
+
+    def rm_edge(self, v, u):
+
+        if u in self and v in self:
+            if u in self[v].neighbors:
+                self[v].neighbors.pop(u)
+            if v in self[u].neighbors:
+                self[u].neighbors.pop(v)
+
+    def is_connected(self, found=set(), start=None):
+        """ Este metodo está trazendo True quando acha um grafo
+         conexo em que todos os vértices se conhecem, preciso ver na
+         a definição de grafos conexos e conectados, li que para ser
+         conectado basta ter dois vértices conectados e ai não importa
+         se os outros são isolados, mas também li que um grafo conexo tem
+         uma forma de se cada nó se relacionar com cada outro nó, o que
+         difere de outra definição que li que diz que no grafo conexo,
+         cada nó tem que conhecer todos os outros nós, ou seja,
+         ser completamente ligado, deve ter definição ERRADA na internet
+         então. TODO buscar a definição certa e modificar o método
+         se for o caso.
+         O metodo tambem deve se chamar: eh_conexo(), pq para ver se é
+         ou não connected, é só chamar o metodo que verfica se tem nó isolado
+        """
+
+        vertices = list(self.keys())
+        vertices.sort()
+
+        if not start:
+            start = vertices[0]
+
+        found.add(start)
+
+        if len(found) != len(vertices):
+            for v in self[start].neighbors:
+                if v not in found:
+                    if self.is_connected(found, v):
+                        return True
+        else:
+            return True
+
+        return False
+
+    def get_degree(self, vertex):
+        return len(self[vertex].neighbors)
+
+    @property
+    def min_degree(self):
+
+        min_degree = 100000000
+
+        for vertex in self:
+            degree = self.get_degree(vertex)
+
+            if degree < min_degree:
+                min_degree = degree
+        return min_degree
+
+    @property
+    def max_degree(self):
+
+        max_degree = 0
+
+        for vertex in self:
+            degree = self.get_degree(vertex)
+
+            if degree > max_degree:
+                max_degree = degree
+        return max_degree
+
+    @property
+    def density(self):
+
+        v = len(self.keys())
+        e = len(self.edges)
+
+        return 2.0 * e / (v * (v - 1))
+
+    @property
+    def diameter(self):
+        # TODO: verificar se esta função esta funcionando do jeito certo!
+
+        v = self.vertices
+
+        pairs = [(v[i], v[j]) for i in range(len(v) - 1) for j in range(i + 1, len(v))]
+
+        smallest_paths = list()
+
+        for (s, e) in pairs:
+            # paths = self.find_all_paths(s, e)
+            paths = self.bfs_paths(s, e)
+            smallest = sorted(paths, key=len)[0]
+            smallest_paths.append(smallest)
+
+        smallest_paths.sort(key=len)
+
+        diameter = len(smallest_paths[-1])
+
+        return diameter
+
+    @staticmethod
+    def is_degree_sequence(sequence):
+        return all(x >= y for x, y in zip(sequence, sequence[1:]))
+
+    @staticmethod
+    def erdoes_gallai(dsequence):
+
+        if sum(dsequence) % 2:
+            # sum of sequence is odd
+            return False
+
+        if Graph.is_degree_sequence(dsequence):
+            for k in range(1, len(dsequence) + 1):
+                left = sum(dsequence[:k])
+                right = k * (k - 1) + sum([min(x, k) for x in dsequence[k:]])
+                if left > right:
+                    return False
+        else:
+            # sequence is increasing
+            return False
+        return True
+
+    # def adjacency_matrix(self):
+    #
+    #     keys = sorted(self.keys())
+    #     size = len(keys)
+    #
+    #     matrix = [[0] * size for _ in range(size)]
+    #
+    #     for a, b in [(keys.index(a), keys.index(b)) for a, row in self.items() for b in row]:
+    #         matrix[a][b] = 2 if (a == b) else 1
+    #
+    #     return matrix
+
+    @property
+    def degree_sequence(self):
+
+        # seq = dict()
+        #
+        # for vertex in self:
+        #     seq[vertex] = self.get_degree(vertex)
+        #
+        # seq = sorted(seq.items(), key=lambda x: x[1])
+        #
+        # return seq
+
+        seq = []
+
+        for vertex in self:
+            seq.append(self.get_degree(vertex))
+
+        seq.sort(reverse=True)
+
+        return tuple(seq)
+
+    @property
+    def isolated_vertices(self):
+
+        isolated = list()
+
+        for v in self:
+            if not self[v].neighbors:
+                isolated.append(v)
+        return isolated
+
+    @property
+    def vertices(self):
+        return list(self.keys())
+
+    @property
+    def edges(self):
+        edges = list()
+
+        for v in self:
+            for neighbor in self[v].neighbors:
+                if {neighbor, v} not in edges:
+                    edges.append({v, neighbor})
+        return edges
 
     # Breadth-First Search Methods ==============================================
 
@@ -126,42 +312,44 @@ class Graph(dict):
 
     # ----------------------------------------------------------
 
+    def dijkstra(self, start, target, visited=list(), distances=dict(), previous=dict()):
 
+        if start not in self:
+            raise TypeError('Start vertex cannot be found in the graph.')
+        if target not in self:
+            raise TypeError('The target vertex does not exist in the graph.')
 
-    def dijkstra(self, chave, destino, visitado=list(), distancia=dict(), anterior=dict()):
+        if start == target:
+            path = list()
+            ant = target
 
-        if chave not in self:
-            raise TypeError('A raiz da arvore de caminho mais curto nao pode ser encontrado no grafo')
-        if destino not in self:
-            raise TypeError('O alvo do caminho mais curto nao pode ser encontrado no grafo')
-            # finalizando a condição
-        if chave == destino:
-            # Contruir o caminho e mostramos ele
-            caminho = []
-            ant = destino
-            while ant != None:
-                caminho.append(ant)
-                ant = anterior.get(ant, None)
-            caminho.reverse()
-            print('Menor caminho: ' + str(caminho) + " andou = " + str(distancia[destino]))
+            while ant:
+                path.append(ant)
+                ant = previous.get(ant, None)
+            path.reverse()
+
+            print('Smaller path: {}\nWeight: {}'.format(path, distances[target]))
+
         else:
-            if not visitado:
-                distancia[chave] = 0  # procura nos vizinhos
-            for vizinho in self[chave].neighbors:
-                if vizinho not in visitado:
-                    nova_distancia = distancia[chave] + int(self[chave].neighbors[vizinho])
-                    if nova_distancia < distancia.get(vizinho, float('inf')):
-                        distancia[vizinho] = nova_distancia
-                        anterior[vizinho] = chave
+            if not visited:
+                distances[start] = 0
+            for neighbor in self[start].neighbors:
+                if neighbor not in visited:
+                    new_distance = distances[start] + int(self[start].neighbors[neighbor])
+                    if new_distance < distances.get(neighbor, float('inf')):
+                        distances[neighbor] = new_distance
+                        previous[neighbor] = start
 
-            visitado.append(chave)
+            visited.append(start)
 
-            unvisitado = {}
+            unvisited = {}
+
             for k in self:
-                if k not in visitado:
-                    unvisitado[k] = distancia.get(k, float('inf'))
-            x = min(unvisitado, key=unvisitado.get)  # dos visitados, pega o c/ menor custo
-            self.dijkstra(x, destino, visitado, distancia, anterior)
+                if k not in visited:
+                    unvisited[k] = distances.get(k, float('inf'))
+            x = min(unvisited, key=unvisited.get)
+
+            self.dijkstra(x, target, visited, distances, previous)
 
     def __str__(self):
         """ Shows the graph's adjacency list """
@@ -173,3 +361,36 @@ class Graph(dict):
 
         return str_g
 
+    ''' TODO Implementar:
+    
+        arestas paralelas
+        achar arestas incidentes a um grafp
+        mostar vertices adjacentes a um vertice
+        mostrar os adjacentes entre sí
+        mostrar arestas adjacentes
+        mostrar laços
+        verificar se é simples, sem arestas paralelas e laços
+        Grafo direcionado
+        mostrar se é grafo completo
+        qtd de grafos distintos
+        se é grafo ciclo
+        se é grafo roda
+        se é grafo cubo
+        se é bipartido
+        se é bipartido completo
+        multigrafo
+        pseudografo
+        multigrafo dirigido
+        hipergrafo
+        valorado
+        imersível
+        subgrafo
+        grafo regular
+        matriz adjacencia dirigido e não dirigido
+        matriz incidencia
+        ver se são isomorfos
+        árvores e arvores geradoras
+        florestas \||||||
+        homromorfos
+        caminho euleriano e hamiltoniano
+        '''

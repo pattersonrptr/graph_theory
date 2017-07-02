@@ -56,12 +56,14 @@ def testa():
     g.add_edge('5', '0')
     g.add_edge('0', '5')
 
-    print(g)
 
-    print(g.r_bfs('0', '1'))
+    print("***********")
+
+
 
 if __name__ == "__main__":
 
     # testa_dijkstra()
     testa()
+
 
