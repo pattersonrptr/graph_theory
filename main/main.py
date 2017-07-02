@@ -28,7 +28,7 @@ def testa_dijkstra():
     graph.dijkstra('A', 'D')
 
 
-def testa_dfs():
+def testa():
 
     g = Graph()
 
@@ -58,10 +58,10 @@ def testa_dfs():
 
     print(g)
 
-    print(g.r_dfs('0', '1'))
+    print(g.r_bfs('0', '1'))
 
 if __name__ == "__main__":
 
     # testa_dijkstra()
-    testa_dfs()
+    testa()
 

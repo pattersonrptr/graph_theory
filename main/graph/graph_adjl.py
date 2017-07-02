@@ -16,7 +16,6 @@ class Vertex:
 
 
 class Graph(dict):
-    # self = dict()
 
     def add_vertex(self, vertex):
 
@@ -40,21 +39,41 @@ class Graph(dict):
 
     # Breadth-First Search Methods ==============================================
 
-    def bfs(self, start, target):
+    def i_bfs(self, start, target):
 
         queue, visited = [start], list()
+
         while queue:
             current = queue.pop(0)
             if current == target:
                 return visited + [current]
+
             if current not in visited:
                 queue.extend(set(self[current].neighbors) - set(visited))
                 visited += [current]
         return False
 
-    def bfs_all(self, start, target):
+    def r_bfs(self, start, target, visited=list()):
+
+        visited.extend(start)
+
+        if target in visited:
+            return visited
+
+        same_level_nodes = list()
+
+        for v in start:
+            #  Does not consider neighbors that are vertices already visited.
+            neighbors = [u for u in self[v].neighbors if u not in visited]
+            # List of vertices of the same level, without considering repeated vertices.
+            same_level_nodes.extend([u for u in neighbors if u not in same_level_nodes])
+
+        return self.r_bfs(same_level_nodes, target, visited)
+
+    def bfs_paths(self, start, target):
 
         queue = [(start, [start])]
+
         while queue:
             current, path = queue.pop(0)
             if current == target:
@@ -65,9 +84,9 @@ class Graph(dict):
     # Depth-First Search Methods ==============================================
 
     def i_dfs(self, start, target):
-        """ Iterative Depth-First Search. """
 
         stack, visited = [start], list()
+
         while stack:
             current = stack.pop()
 
@@ -77,17 +96,15 @@ class Graph(dict):
             if current not in visited:
                 visited.append(current)
                 stack.extend(set(self[current].neighbors) - set(visited))
+
         return False
 
     def r_dfs(self, start, target, visited=set()):
-        """ Recursive Depth-First Search. """
 
         visited.add(start)
 
-        print(start, target, visited)
-
         for v in set(self[start].neighbors) - visited:
-            
+
             self.r_dfs(v, target, visited)
 
             if target in visited:
@@ -95,47 +112,21 @@ class Graph(dict):
 
         return False
 
-    # def dfs_paths(self, start, target, path=list()):
-    #     if not path:
-    #         path = [start]
-    #     if start == target:
-    #         yield path
-    #     for v in set(self[start].neighbors) - set(path):
-    #         yield from self.dfs_paths(v, target, path + [v])
+    def dfs_paths(self, start, target, path=list()):
 
-    # def dfs_vertices(self, inicio, alvo, visitados=None):
-    #     ''' Retorna todos os nós que podem ser visitados a partir de um nó inicial '''
-    #     if visitados is None:
-    #         visitados = []
-    #
-    #     # Este IF vai parar a recursão quando achar o nó alvo, sem ele o algoritmo visitaria tos os os nós
-    #     if alvo in visitados:
-    #         return visitados
-    #
-    #     if inicio in visitados:
-    #         return
-    #
-    #     visitados.append(inicio)
-    #     # Percorre os vizinhos do vértice inicial/raiz
-    #     for cada in [x for x in self[inicio] if x not in visitados]:
-    #         # Chama recursivamente passando vinzinho e a lista de visitados
-    #         self.dfs_vertices(cada, alvo, visitados)
-    #
-    #     return visitados if alvo in visitados else False
+        if not path:
+            path = [start]
+
+        if start == target:
+            yield path
+
+        for vertex in [x for x in self[start].neighbors if x not in path]:
+            for each_path in self.dfs_paths(vertex, target, path + [vertex]):
+                yield each_path  # return the paths generator
 
     # ----------------------------------------------------------
 
-    def dfs_caminhos(self, inicio, alvo, caminho=None):
 
-        if caminho is None:
-            caminho = [inicio]
-
-        if inicio == alvo:
-            yield caminho
-
-        for vertice in [x for x in self[inicio] if x not in caminho]:
-            for cada_caminho in self.dfs_caminhos(vertice, alvo, caminho + [vertice]):
-                yield cada_caminho  # Gera uma lista de caminhos
 
     def dijkstra(self, chave, destino, visitado=list(), distancia=dict(), anterior=dict()):
 
@@ -173,8 +164,10 @@ class Graph(dict):
             self.dijkstra(x, destino, visitado, distancia, anterior)
 
     def __str__(self):
+        """ Shows the graph's adjacency list """
 
         str_g = ''
+
         for key in sorted(list(self.keys())):
             str_g += key + ' --> ' + str(self[key].neighbors) + '\n'
 
