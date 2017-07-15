@@ -54,20 +54,6 @@ class Graph(dict):
                 self[u].neighbors.pop(v)
 
     def is_connected(self, found=set(), start=None):
-        """ Este metodo está trazendo True quando acha um grafo
-         conexo em que todos os vértices se conhecem, preciso ver na
-         a definição de grafos conexos e conectados, li que para ser
-         conectado basta ter dois vértices conectados e ai não importa
-         se os outros são isolados, mas também li que um grafo conexo tem
-         uma forma de se cada nó se relacionar com cada outro nó, o que
-         difere de outra definição que li que diz que no grafo conexo,
-         cada nó tem que conhecer todos os outros nós, ou seja,
-         ser completamente ligado, deve ter definição ERRADA na internet
-         então. TODO buscar a definição certa e modificar o método
-         se for o caso.
-         O metodo tambem deve se chamar: eh_conexo(), pq para ver se é
-         ou não connected, é só chamar o metodo que verfica se tem nó isolado
-        """
 
         vertices = list(self.keys())
         vertices.sort()
