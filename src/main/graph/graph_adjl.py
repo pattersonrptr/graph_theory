@@ -76,6 +76,12 @@ class Graph(dict):
     (also called an arc or line).
     """
 
+    def __init__(self, name='Graph'):
+
+        super(Graph, self).__init__()
+
+        self.name = name
+
     def __str__(self):
         """
         Represents the graph in the form of an adjacency list.
@@ -238,8 +244,6 @@ class Graph(dict):
         v = len(self.keys())
         e = len(list(self.edges))
 
-        print(e, v)
-
         return 2.0 * e / (v * (v - 1))
 
     @property
@@ -338,6 +342,7 @@ class Graph(dict):
         for v in self:
             if not self[v].neighbors:
                 isolated.append(v)
+
         return isolated
 
     @property
@@ -551,6 +556,12 @@ class Graph(dict):
             x = min(unvisited, key=unvisited.get)
 
             self.dijkstra(x, target, visited, distances, previous)
+
+    # TODO Criar novo branch para implementar as features abaixo, mesclar ao master quando tiver pronto
+    # TODO Corrigir bug ao remover vértice com loop
+    # TODO Graph deve receber no __init__ uma flag is_directed informando se é um grafo direcionado ou não
+    # TODO No metodo add_edge(U, V), não adicionar aresta para o V se o grafo for direcionado, para obter U->V
+    # TODO Se não direcionado, permitir aresta 'duplicada' U<->V
 
     ''' TODO Implementar:
     

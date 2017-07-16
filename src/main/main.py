@@ -1,84 +1,74 @@
-import random
 
-from src.main.graph.graph_adjl import Vertex
 from src.main.graph.graph_adjl import Graph
 
 
-def testa_dijkstra():
-    graph = Graph()
+def test():
 
-    for i in range(ord('A'), ord('E')):
-        # for i in range(0, 8):
-        graph.add_vertex(Vertex(chr(i)))
-        # graph.add_vertex(Vertex(str(i)))
+    graph = Graph('Grafo 1')    # Cria o Grafo
 
-    # edges = ['AB5', 'AE1', 'BF3', 'CG4', 'DE5', 'DH6', 'EH7', 'FG2', 'FI5', 'FJ9', 'GJ2', 'HI5']
-    # edges = ['AB4', 'AC3', 'BD2', 'CB1', 'CD2', 'CE2', 'DF2', 'EF3']
-    edges = ['AB8', 'AC7', 'BC7', 'CD6', 'BD3']
+    for i in range(ord('A'), ord('G') + 1):
+        graph.add_vertex(chr(i))
+
+    edges = ['AB5', 'AC8', 'AD4', 'BE7', 'CF10', 'DE5', 'DF11', 'EG9', 'FG6']
 
     for edge in edges:
-        graph.add_edge(edge[1:2], edge[:-2], edge[2:])
+        graph.add_edge(edge[0:1], edge[1:2], edge[2:])
 
-    graph.add_vertex('E')
-    graph.add_edge('D', 'E', 5)
-
+    print(graph.name + ': \n')
     print(graph)
-    print(graph.diameter)
 
-    print(graph.i_dfs('A', 'D'))
-    print(graph.r_dfs('A', 'D'))
-    print('*' * 80)
-    print(graph.i_bfs('A', 'D'))
-    print(graph.r_bfs('A', 'D'))
+    print('O grafo possui {0} vértices e {1} arestas.'.format(
+            len(list(graph.vertices)),
+            len(list(graph.edges)))
+          )
 
-    print('*' * 80)
+    print('Vertices: \n')
+    print([v for v in graph.vertices])
 
-    for p in graph.dfs_paths('A', 'D'):
-        print(p)
+    print('Arestas: \n')
+    print([e for e in graph.edges])
 
-    graph.dijkstra('A', 'E')
+    print('O grafo possui vértices isolados?')
+    print('Sim' if len(graph.isolated_vertices) else 'Não')
+    print('O grafo é conectado?')
+    print('Sim' if graph.is_connected() else 'Não')
+    print('O diâmetro do grafo é {}'.format(graph.diameter))
+    print('A densidade do grafo é {}'.format(graph.density))
+    print('O maior grau de vértice no grafo é {}.'.format(graph.max_degree))
+    print('O menor grau de vértice no grafo é {}.'.format(graph.min_degree))
+    print('Sequência de graus dos vértices:', graph.degree_sequence)
+    print('O grafo tem uma sequência de graus não crescente?')
+    print('Sim' if graph.is_degree_sequence(graph.degree_sequence) else 'Não')
+    print('O grafo é simples?')
+    print('Sim' if graph.erdoes_gallai(graph.degree_sequence) else 'Não')
 
+    print('Depth-first Search')
 
-def testa():
+    print(graph.i_dfs('A', 'G'))
+    print(graph.r_dfs('A', 'G'))
+    print([path for path in graph.dfs_paths('A', 'E')])
 
-    g = Graph()
+    print('Breadth-first Search')
 
-    for i in range(8):
-        g.add_vertex(i)
+    print(graph.i_bfs('A', 'G'))
+    print(graph.r_bfs('A', 'G'))
+    print([path for path in graph.bfs_paths('A', 'E')])
 
-    g.add_edge('0', '2')
-    g.add_edge('2', '0')
-    g.add_edge('0', '7')
-    g.add_edge('7', '0')
-    g.add_edge('2', '6')
-    g.add_edge('6', '2')
-    g.add_edge('6', '4')
-    g.add_edge('4', '6')
-    g.add_edge('5', '3')
-    g.add_edge('5', '4')
-    g.add_edge('4', '5')
-    g.add_edge('4', '3')
-    g.add_edge('3', '5')
-    g.add_edge('3', '4')
-    g.add_edge('7', '1')
-    g.add_edge('1', '7')
-    g.add_edge('7', '4')
-    g.add_edge('4', '7')
-    g.add_edge('5', '0')
-    g.add_edge('0', '5')
+    print('Dijkstra')
+    graph.dijkstra('A', 'G')
 
-    print("*" * 80)
+    print('Removendo o vértice D')
+    graph.rm_vertex('D')
+    print('O grafo agora tem {} vértices'.format(len(graph.keys())))
+    print(graph)
 
-    for path in g.dfs_paths('7', '4'):
-        print(path)
-
-
-    print("*" * 80)
+    print('Removendo a aresta A --- B')
+    graph.rm_edge('A', 'B')
+    print('O grafo agora tem {} arestas'.format(len(list(graph.edges))))
+    print(graph)
 
 if __name__ == "__main__":
-
-    # testa_dijkstra()
-    testa()
+    test()
 
 
 
