@@ -26,6 +26,7 @@ pro: rápida e usa menos espaço para grafos esparsos
 con: lenta para grafos densos
 """
 
+# TODO revisar mais uma vez todos os metodos bfs e dfs,
 
 class Graph(dict):
 
@@ -71,7 +72,6 @@ class Graph(dict):
             self.pop(vertex)
 
     def add_edge(self, u, v, weight=math.inf):
-
         """
         Adds an edge between two vertices of the graph.
         Optionally adds a weight to the edge.
@@ -199,7 +199,7 @@ class Graph(dict):
         :return: The diameter of the graph
         """
 
-        v = self.vertices
+        v = list(self.vertices)
 
         pairs = [(v[i], v[j]) for i in range(len(v) - 1) for j in range(i + 1, len(v))]
 
@@ -339,7 +339,7 @@ class Graph(dict):
             if current not in visited:
                 queue.extend(set(self[current].neighbors) - set(visited))
                 visited += [current]
-        return False
+        return None
 
     def r_bfs(self, start, target, visited=None):
         """
@@ -409,13 +409,13 @@ class Graph(dict):
             current = stack.pop()
 
             if current == target:
-                return True
+                return visited + [current]
 
             if current not in visited:
                 visited.append(current)
                 stack.extend(set(self[current].neighbors) - set(visited))
 
-        return False
+        return None
 
     def r_dfs(self, start, target, visited=None):
         """
@@ -487,8 +487,8 @@ class Graph(dict):
                 distances[start] = 0
             for neighbor in self[start].neighbors:
                 if neighbor not in visited:
-                    new_distance = distances[start] + int(self[start].neighbors[neighbor])
-                    if new_distance < distances.get(neighbor, float('inf')):
+                    new_distance = distances[start] + float(self[start].neighbors[neighbor])
+                    if new_distance < distances.get(neighbor, math.inf):
                         distances[neighbor] = new_distance
                         previous[neighbor] = start
 
@@ -498,7 +498,7 @@ class Graph(dict):
 
             for k in self:
                 if k not in visited:
-                    unvisited[k] = distances.get(k, float('inf'))
+                    unvisited[k] = distances.get(k, math.inf)
             x = min(unvisited, key=unvisited.get)
 
             self.dijkstra(x, target, visited, distances, previous)

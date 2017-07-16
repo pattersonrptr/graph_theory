@@ -19,16 +19,24 @@ def testa_dijkstra():
     for edge in edges:
         graph.add_edge(edge[1:2], edge[:-2], edge[2:])
 
+    graph.add_vertex('E')
+    graph.add_edge('D', 'E', 5)
+
     print(graph)
     print(graph.diameter)
 
     print(graph.i_dfs('A', 'D'))
     print(graph.r_dfs('A', 'D'))
+    print('*' * 80)
+    print(graph.i_bfs('A', 'D'))
+    print(graph.r_bfs('A', 'D'))
+
+    print('*' * 80)
 
     for p in graph.dfs_paths('A', 'D'):
         print(p)
 
-    graph.dijkstra('A', 'D')
+    graph.dijkstra('A', 'E')
 
 
 def testa():
@@ -69,8 +77,8 @@ def testa():
 
 if __name__ == "__main__":
 
-    # testa_dijkstra()
-    testa()
+    testa_dijkstra()
+    # testa()
 
 
 
