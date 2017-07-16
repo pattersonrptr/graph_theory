@@ -53,7 +53,6 @@ class Graph(dict):
         return False
 
     def rm_vertex(self, vertex):
-
         """
         Removes the received vertex if it exists.
 
