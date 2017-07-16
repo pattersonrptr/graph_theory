@@ -1,37 +1,96 @@
+"""
+This module contains the classes Graph and Vertex, and implements functions related to graphs according to graph theory.
+The Graph class implemented in this module represents a structured graph in the form of an adjacency list.
+
+The advantages and disadvantages of using an adjacency list are:
+
+Pros: Quick and uses less space for sparse graphs.
+Cons: It's slow for dense graphs. """
+
 import math
 
 
 class Vertex:
+    """
+    This class implements a vertex. In graph theory, a vertex (plural vertices) or node is the fundamental unit
+    from which the graphs are formed. """
+
     def __init__(self, name):
+        """
+        Receives the name of the vertex and creates a list of neighbors.
+
+        :param name: The vertex' name
+        """
+
         self.name = str(name)
         self.neighbors = dict()
 
     def __str__(self):
+        """
+        Representation of the vertex in the form of a string as its name.
+
+        :return: The vertex' name
+        """
+
         return self.name
 
     def __repr__(self):
+        """
+        Detailed representation of the Vertex object in the form of a string.
+
+        :return: The vertex' name
+        """
+
         return 'Vertex(%r, %r)' % (self.name, self.neighbors)
 
-    def add_neighbor(self, v, weight=0):
+    def add_neighbor(self, v, weight=math.inf):
+        """
+        Adds a new neighbor (adjacent vertex) to the neighbors list.
+
+        :param v: The new neighbor
+        :param weight: The weight of the edge connecting the neighbor to the vertex in question,
+                       if not informed, assumes the infinite value.
+        """
+
         if v not in self.neighbors:
             self.neighbors[v] = weight
 
     @property
     def degree(self):
+        """
+        Returns the degree of the vertex.
+
+        :return: The vertex' degree
+        """
+
         return len(self.neighbors)
 
-"""
-Adjacency lists
-pro: rápida e usa menos espaço para grafos esparsos
-con: lenta para grafos densos
-"""
-
-# TODO revisar mais uma vez todos os metodos bfs e dfs,
 
 class Graph(dict):
+    """
+    This class implements a graph structure. A graph is composed by sets of vertices connected by edges.
+
+    In mathematics, and more specifically in graph theory, a graph is a structure amounting to a set of objects in
+    which some pairs of the objects are in some sense "related". The objects correspond to mathematical abstractions
+    called vertices (also called nodes or points) and each of the related pairs of vertices is called an edge
+    (also called an arc or line).
+    """
+
+    def __str__(self):
+        """
+        Represents the graph in the form of an adjacency list.
+
+        :return: A string representing the graph's adjacency list.
+        """
+
+        str_g = ''
+
+        for key in sorted(list(self.keys())):
+            str_g += key + ' --> ' + str(self[key].neighbors) + '\n'
+
+        return str_g
 
     def add_vertex(self, vertex):
-
         """
         Adds a new vertex to the graph.
 
@@ -92,7 +151,6 @@ class Graph(dict):
             return False
 
     def rm_edge(self, v, u):
-
         """
         Removes the edge between the received vertices if it exists.
 
@@ -107,7 +165,6 @@ class Graph(dict):
                 self[u].neighbors.pop(v)
 
     def is_connected(self, found=set(), start=None):
-
         """
         Checks if the graph is connected.
 
@@ -136,7 +193,6 @@ class Graph(dict):
 
     @property
     def min_degree(self):
-
         """
         Find the lowest degree of vertex in the graph.
 
@@ -155,7 +211,6 @@ class Graph(dict):
 
     @property
     def max_degree(self):
-
         """
         Find the greatest degree of vertex in the graph.
 
@@ -173,7 +228,6 @@ class Graph(dict):
 
     @property
     def density(self):
-
         """
         Calculates the density of the graph using the formula:
         2 * edges / (vertices * (vertices - 1))
@@ -182,7 +236,7 @@ class Graph(dict):
         """
 
         v = len(self.keys())
-        e = len(self.edges)
+        e = len(list(self.edges))
 
         print(e, v)
 
@@ -190,7 +244,6 @@ class Graph(dict):
 
     @property
     def diameter(self):
-
         """
         Calculate the diameter of a graph by finding the largest possible path
         between the two vertices in the graph.
@@ -219,7 +272,6 @@ class Graph(dict):
 
     @staticmethod
     def is_degree_sequence(sequence):
-
         """
         Given an undirected graph, a degree sequence is a monotonic non-increasing
         sequence of the vertex degrees (valencies) of its graph vertices.
@@ -232,14 +284,13 @@ class Graph(dict):
 
     @staticmethod
     def erdoes_gallai(d_sequence):
-
         """
         The Erdös-Gallai Theorem states that the sequence (di) i = 1, ..., n being di >= di + 1
         is a degree sequence of a simple graph if the sum of the sequence is even and
         (d[i])i=1, ..., n <= k(k - 1) + min(d[i], k)i=k+1, .., n   for  k in {1, ..., n}
 
         :param d_sequence: The degree sequence of a graph
-        :return: True if the Erdös-Gallai is fullfilled or False otherwise
+        :return: True if the Erdös-Gallai is fulfilled or False otherwise
         """
 
         if sum(d_sequence) % 2:
@@ -259,7 +310,6 @@ class Graph(dict):
 
     @property
     def degree_sequence(self):
-
         """
         Returns the vertices' degree sequence of the graph.
 
@@ -277,7 +327,6 @@ class Graph(dict):
 
     @property
     def isolated_vertices(self):
-
         """
         Finds all the isolated vertices.
 
@@ -328,6 +377,7 @@ class Graph(dict):
         :param target: The target vertex to be find
         :return: True if the target vertex is found or False otherwise
         """
+
         queue, visited = [start], list()
 
         while queue:
@@ -418,7 +468,7 @@ class Graph(dict):
 
     def r_dfs(self, start, target, visited=None):
         """
-        Search for a given target vertex using the iterative Depth-First Search algorithm.
+        Search for a given target vertex using the recursive Depth-First Search algorithm.
 
         :param start: The initial vertex
         :param target: The target vertex to be find
@@ -502,16 +552,6 @@ class Graph(dict):
 
             self.dijkstra(x, target, visited, distances, previous)
 
-    def __str__(self):
-        """ Shows the graph's adjacency list """
-
-        str_g = ''
-
-        for key in sorted(list(self.keys())):
-            str_g += key + ' --> ' + str(self[key].neighbors) + '\n'
-
-        return str_g
-
     ''' TODO Implementar:
     
         arestas paralelas
@@ -525,15 +565,22 @@ class Graph(dict):
         mostrar se é grafo completo
         qtd de grafos distintos
         se é grafo ciclo
+        é um ciclo  OBS grafo ciclo é aquele que é um circulo e não um ciclico que é aquele que possui um ou mais ciclos
+        é aciclico
+        is wheel vertex
         se é grafo roda
         se é grafo cubo
         se é bipartido
         se é bipartido completo
+        é grafo estrela?
+        complemento de um grafo
         multigrafo
         pseudografo
         multigrafo dirigido
         hipergrafo
         valorado
+        is regular graph?
+        
         imersível
         subgrafo
         grafo regular

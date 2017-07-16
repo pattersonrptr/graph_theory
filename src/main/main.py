@@ -77,8 +77,8 @@ def testa():
 
 if __name__ == "__main__":
 
-    testa_dijkstra()
-    # testa()
+    # testa_dijkstra()
+    testa()
 
 
 
