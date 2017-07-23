@@ -9,6 +9,9 @@ Cons: It's slow for dense graphs. """
 
 import math
 
+from collections import defaultdict
+from time import sleep
+
 
 class Vertex:
     """
@@ -23,7 +26,7 @@ class Vertex:
         """
 
         self.name = str(name)
-        self.neighbors = dict()
+        self.neighbors = defaultdict(list)
 
     def __str__(self):
         """
@@ -52,8 +55,10 @@ class Vertex:
                        if not informed, assumes the infinite value.
         """
 
-        if v not in self.neighbors:
-            self.neighbors[v] = weight
+        # if v not in self.neighbors:
+        #     self.neighbors[v] = weight
+
+        self.neighbors[v].append(weight)
 
     @property
     def degree(self):
@@ -76,11 +81,12 @@ class Graph(dict):
     (also called an arc or line).
     """
 
-    def __init__(self, name='Graph'):
+    def __init__(self, name='Graph', is_directed=False):
 
         super(Graph, self).__init__()
 
         self.name = name
+        self.is_directed = is_directed
 
     def __str__(self):
         """
@@ -150,6 +156,8 @@ class Graph(dict):
             for key, value in self.items():
                 if key == u:
                     value.add_neighbor(v, weight)
+                if self.is_directed:
+                    break
                 if key == v:
                     value.add_neighbor(u, weight)
             return True
@@ -259,12 +267,15 @@ class Graph(dict):
 
         pairs = [(v[i], v[j]) for i in range(len(v) - 1) for j in range(i + 1, len(v))]
 
+        print(pairs)
+
         smallest_paths = list()
 
         for (s, e) in pairs:
-            # paths = self.find_all_paths(s, e)
             paths = self.bfs_paths(s, e)
-            # smallest = sorted(paths, key=len)[0]
+            if e == 'E':
+                print('>>>', (s, e), len(list(paths)))
+            sleep(2)
             smallest = sorted(paths, key=lambda x: len(x))[0]
             smallest_paths.append(smallest)
 
@@ -518,7 +529,14 @@ class Graph(dict):
 
     # ----------------------------------------------------------
 
-    def dijkstra(self, start, target, visited=list(), distances=dict(), previous=dict()):
+    def dijkstra(self, start, target, visited=None, distances=None, previous=None):
+
+        if not visited:
+            visited = list()
+        if not distances:
+            distances = dict()
+        if not previous:
+            previous = dict()
 
         if start not in self:
             raise TypeError('Start vertex cannot be found in the graph.')
@@ -541,7 +559,7 @@ class Graph(dict):
                 distances[start] = 0
             for neighbor in self[start].neighbors:
                 if neighbor not in visited:
-                    new_distance = distances[start] + float(self[start].neighbors[neighbor])
+                    new_distance = distances[start] + float(min(self[start].neighbors[neighbor]))
                     if new_distance < distances.get(neighbor, math.inf):
                         distances[neighbor] = new_distance
                         previous[neighbor] = start
@@ -557,11 +575,6 @@ class Graph(dict):
 
             self.dijkstra(x, target, visited, distances, previous)
 
-    # TODO Criar novo branch para implementar as features abaixo, mesclar ao master quando tiver pronto
-    # TODO Corrigir bug ao remover vértice com loop
-    # TODO Graph deve receber no __init__ uma flag is_directed informando se é um grafo direcionado ou não
-    # TODO No metodo add_edge(U, V), não adicionar aresta para o V se o grafo for direcionado, para obter U->V
-    # TODO Se não direcionado, permitir aresta 'duplicada' U<->V
 
     ''' TODO Implementar:
     

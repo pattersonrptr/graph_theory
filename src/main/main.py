@@ -4,7 +4,7 @@ from src.main.graph.graph_adjl import Graph
 
 def test():
 
-    graph = Graph('Grafo 1')    # Cria o Grafo
+    graph = Graph('Grafo 1', is_directed=False)    # Cria o Grafo
 
     for i in range(ord('A'), ord('G') + 1):
         graph.add_vertex(chr(i))
@@ -12,7 +12,7 @@ def test():
     edges = ['AB5', 'AC8', 'AD4', 'BE7', 'CF10', 'DE5', 'DF11', 'EG9', 'FG6']
 
     for edge in edges:
-        graph.add_edge(edge[0:1], edge[1:2], edge[2:])
+        graph.add_edge(edge[0:1], edge[1:2], int(edge[2:]))
 
     print(graph.name + ': \n')
     print(graph)
@@ -32,6 +32,10 @@ def test():
     print('Sim' if len(graph.isolated_vertices) else 'Não')
     print('O grafo é conectado?')
     print('Sim' if graph.is_connected() else 'Não')
+
+    print(list(graph.bfs_paths('A', 'G')))
+    input()
+
     print('O diâmetro do grafo é {}'.format(graph.diameter))
     print('A densidade do grafo é {}'.format(graph.density))
     print('O maior grau de vértice no grafo é {}.'.format(graph.max_degree))
@@ -57,15 +61,32 @@ def test():
     print('Dijkstra')
     graph.dijkstra('A', 'G')
 
-    print('Removendo o vértice D')
-    graph.rm_vertex('D')
-    print('O grafo agora tem {} vértices'.format(len(graph.keys())))
+    # print('Removendo o vértice D')
+    # graph.rm_vertex('D')
+    # print('O grafo agora tem {} vértices'.format(len(graph.keys())))
+    # print(graph)
+
+    # print('Removendo a aresta A --- B')
+    # graph.rm_edge('A', 'B')
+    # print('O grafo agora tem {} arestas'.format(len(list(graph.edges))))
+    # print(graph)
+
+    # print('Adicionando nova conexão de A para B')
+    # graph.add_edge('A', 'B', 5)
+    # print(graph)
+
+    print('Adicionando mais uma conexão de A para B')
+    graph.add_edge('A', 'B', 4)
+
+    print('Adicionando mais uma conexão de A para B')
+    graph.add_edge('A', 'B', 4)
+
+    print('Adicionando mais uma conexão de A para B')
+    graph.add_edge('A', 'B', 1)
+
     print(graph)
 
-    print('Removendo a aresta A --- B')
-    graph.rm_edge('A', 'B')
-    print('O grafo agora tem {} arestas'.format(len(list(graph.edges))))
-    print(graph)
+    graph.dijkstra('A', 'G')
 
 if __name__ == "__main__":
     test()
