@@ -10,7 +10,6 @@ Cons: It's slow for dense graphs. """
 import math
 
 from collections import defaultdict
-from time import sleep
 
 
 class Vertex:
@@ -129,14 +128,14 @@ class Graph(dict):
 
         :param vertex: The vertex to be removed
         """
-
+        # TODO consertar bug que acontece quando se tenta remover um vértice que possui loop (uma aresta para ele mesmo)
         if not isinstance(vertex, str):
             vertex = str(vertex)
 
         if vertex in self:
             for v in self[vertex].neighbors:
                 for u in self[v].neighbors:
-                    if u == vertex:
+                    if u == vertex and v != vertex:
                         self[v].neighbors.pop(vertex)
                         break
             self.pop(vertex)
@@ -151,14 +150,12 @@ class Graph(dict):
         :param weight: The weight of the edge, if not defined, assumes the infinite value.
         :return: True if it have succeeded in adding the edge or False otherwise.
         """
-
+        # TODO Permitir passar só um vértice para Loop nele mesmo
         if u in self and v in self:
             for key, value in self.items():
                 if key == u:
                     value.add_neighbor(v, weight)
-                if self.is_directed:
-                    break
-                if key == v:
+                if key == v and not self.is_directed:
                     value.add_neighbor(u, weight)
             return True
         else:
@@ -212,7 +209,8 @@ class Graph(dict):
 
         :return: The lowest degree
         """
-
+        # TODO não pode considerar 0 o grau de um vértice sem vizinhos se ele tiver arestas incidentes à ele
+        # TODO considerar arestas incidentes, apenas
         min_degree = math.inf
 
         for vertex in self:
@@ -230,7 +228,7 @@ class Graph(dict):
 
         :return: The greatest degree
         """
-
+        # TODO considerar arestas incidentes, apenas
         max_degree = 0
 
         for vertex in self:
@@ -267,17 +265,13 @@ class Graph(dict):
 
         pairs = [(v[i], v[j]) for i in range(len(v) - 1) for j in range(i + 1, len(v))]
 
-        print(pairs)
-
         smallest_paths = list()
 
         for (s, e) in pairs:
             paths = self.bfs_paths(s, e)
-            if e == 'E':
-                print('>>>', (s, e), len(list(paths)))
-            sleep(2)
-            smallest = sorted(paths, key=lambda x: len(x))[0]
-            smallest_paths.append(smallest)
+            smallest = sorted(paths, key=lambda x: len(x))
+            if smallest:
+                smallest_paths.append(smallest[0])
 
         smallest_paths.sort(key=len)
 
@@ -347,7 +341,8 @@ class Graph(dict):
 
         :return: The isolated vertices list or an empty list if there isn't any isolated vertex.
         """
-
+        # TODO corrigir bug.
+        # TODO O método considera um vétice sem vizinhos como isolado mas, se ele tem arestas incidentes não é isolado
         isolated = list()
 
         for v in self:
@@ -530,6 +525,7 @@ class Graph(dict):
     # ----------------------------------------------------------
 
     def dijkstra(self, start, target, visited=None, distances=None, previous=None):
+# TODO corrigir erro do dijkstra ao tentar buscar por um vértice que existe no grafo mas não é alcansável por ser isolado
 
         if not visited:
             visited = list()
@@ -576,16 +572,16 @@ class Graph(dict):
             self.dijkstra(x, target, visited, distances, previous)
 
 
-    ''' TODO Implementar:
-    
-        arestas paralelas
-        achar arestas incidentes a um grafp
+        # TODO implementar:
+        '''
+        arestas paralelas                           OK
+        grafo direcionado e não-direcionado         OK
+        achar arestas incidentes a um grafo
         mostar vertices adjacentes a um vertice
         mostrar os adjacentes entre sí
         mostrar arestas adjacentes
         mostrar laços
         verificar se é simples, sem arestas paralelas e laços
-        Grafo direcionado
         mostrar se é grafo completo
         qtd de grafos distintos
         se é grafo ciclo
