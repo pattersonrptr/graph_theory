@@ -128,7 +128,7 @@ class Graph(dict):
 
         :param vertex: The vertex to be removed
         """
-        # TODO consertar bug que acontece quando se tenta remover um vértice que possui loop (uma aresta para ele mesmo)
+
         if not isinstance(vertex, str):
             vertex = str(vertex)
 
@@ -150,6 +150,7 @@ class Graph(dict):
         :param weight: The weight of the edge, if not defined, assumes the infinite value.
         :return: True if it have succeeded in adding the edge or False otherwise.
         """
+
         # TODO Permitir passar só um vértice para Loop nele mesmo
         if u in self and v in self:
             for key, value in self.items():
@@ -202,6 +203,24 @@ class Graph(dict):
 
         return False
 
+    def degree(self, vertex):
+        """
+        Returns the vertex degree
+        :param vertex: A Vertex
+        :return: Integer for the vertex degree
+        """
+        if isinstance(vertex, Vertex):
+            vertex = vertex.name
+
+        v_degree = 0
+
+        for v in self:
+            for u in self[v].neighbors:
+                if u == vertex:
+                    v_degree += len(self[v].neighbors[u])
+
+        return v_degree
+
     @property
     def min_degree(self):
         """
@@ -209,12 +228,11 @@ class Graph(dict):
 
         :return: The lowest degree
         """
-        # TODO não pode considerar 0 o grau de um vértice sem vizinhos se ele tiver arestas incidentes à ele
-        # TODO considerar arestas incidentes, apenas
+
         min_degree = math.inf
 
         for vertex in self:
-            degree = self[vertex].degree
+            degree = self.degree(vertex)
 
             if degree < min_degree:
                 min_degree = degree
@@ -228,11 +246,11 @@ class Graph(dict):
 
         :return: The greatest degree
         """
-        # TODO considerar arestas incidentes, apenas
+
         max_degree = 0
 
         for vertex in self:
-            degree = self[vertex].degree
+            degree = self.degree(vertex)
 
             if degree > max_degree:
                 max_degree = degree
@@ -574,6 +592,11 @@ class Graph(dict):
 
         # TODO implementar:
         '''
+        https://en.wikipedia.org/wiki/Directed_graph
+        Indegree and outdegree
+        Directed graph connectivity
+        eaf vertex
+        pendant edge
         arestas paralelas                           OK
         grafo direcionado e não-direcionado         OK
         achar arestas incidentes a um grafo
