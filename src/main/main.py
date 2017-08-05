@@ -20,6 +20,7 @@ def test():
     graph.add_vertex('H')
     graph.add_vertex('I')
     graph.add_vertex('J')
+    graph.add_vertex('K')
     graph.add_edge('A', weight=7)
     graph.add_edge('A', 'G', 10)
     graph.add_edge('A', 'G', 2)
@@ -31,6 +32,7 @@ def test():
     graph.add_edge('J', 'D', 2)
     graph.add_edge('J', 'C', 2)
     graph.add_edge('C', 'J', 3)
+    graph.add_edge('B', 'K', 3)
 
     print(graph.name + ': \n')
     print(graph)
@@ -59,18 +61,21 @@ def test():
     except Exception as e:
         print('Erro:', e)
 
-def criar_grafo():
-    return Graph()
+    for leaf in graph.leaves:
+        print('Folha', leaf)
+
+    for source in graph.sources:
+        print('Source', source)
+
+    for sink in graph.sinks:
+        print('Sink', sink)
+
+    for pendant in graph.pendants:
+        print('Pendants', pendant)
+
 
 if __name__ == "__main__":
-    # test()
-
-    print(
-        '''
-        (1) Criar novo grafo
-        (2) 
-        '''
-    )
+    test()
 
 
 

@@ -406,6 +406,50 @@ class Graph(dict):
                     # yield(v, neighbor)
                 yield (v, neighbor)
 
+    @property
+    def leaves(self):
+        """
+        Generates a list of leaf vertices
+        """
+
+        leaves_list = list()
+
+        for v in self:
+            if self.degree(v) == 1:
+                yield v
+
+    @property
+    def sources(self):
+        """
+        Yields all source vertices (vertices with in-degree zero)
+        """
+
+        for v in self:
+            if not self[v].in_neighbors:
+                yield v
+
+    @property
+    def sinks(self):
+        """
+        Yields all sink vertices (vertices with out-degree zero)
+        """
+
+        for v in self:
+            if not self[v].out_neighbors:
+                yield v
+
+    @property
+    def pendants(self):
+
+        for leaf in self.leaves:
+            yield (
+                self[leaf].name,
+                [k for k in
+                    self[leaf].out_neighbors.items() or
+                    self[leaf].in_neighbors.items() or
+                    self[leaf].get_neighbors()][0][0]
+            )
+
     # Breadth-First Search Methods ==============================================
 
     def i_bfs(self, start, target):
@@ -558,7 +602,7 @@ class Graph(dict):
         Finds the shortest path between two vertices, uses weighted edges to represent the cost of each path for each
         vertex. If the graph is not valued (do not having no edge weight, the same as all edges having the same weight)
         then Dijkstra's Algorithm will consider the smallest path the path that has the least amount of edges.
-        
+
         :param start: The initial vertex.
         :param target: The vertex to be reached from the initial vertex.
         :param visited: A list to control which vertices have been visited.
@@ -617,11 +661,12 @@ class Graph(dict):
     '''
     Indegree and outdegree                      OK
     Directed graph connectivity                 OK
-    leaf vertex
+    leaf vertex                                 OK
+    simplical vertices
     pendant edge
     arestas paralelas                           OK
     grafo direcionado e não-direcionado         OK
-    achar arestas incidentes a um grafo
+    achar arestas incidentes a um vertice
     mostar vertices adjacentes a um vertice
     mostrar os adjacentes entre sí
     mostrar arestas adjacentes
