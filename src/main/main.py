@@ -59,8 +59,18 @@ def test():
     except Exception as e:
         print('Erro:', e)
 
+def criar_grafo():
+    return Graph()
+
 if __name__ == "__main__":
-    test()
+    # test()
+
+    print(
+        '''
+        (1) Criar novo grafo
+        (2) 
+        '''
+    )
 
 
 

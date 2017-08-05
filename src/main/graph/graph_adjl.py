@@ -553,6 +553,19 @@ class Graph(dict):
     # ----------------------------------------------------------
 
     def dijkstra(self, start, target, visited=None, distances=None, previous=None):
+        """
+        Dijkstra Algorithm implementation.
+        Finds the shortest path between two vertices, uses weighted edges to represent the cost of each path for each
+        vertex. If the graph is not valued (do not having no edge weight, the same as all edges having the same weight)
+        then Dijkstra's Algorithm will consider the smallest path the path that has the least amount of edges.
+        
+        :param start: The initial vertex.
+        :param target: The vertex to be reached from the initial vertex.
+        :param visited: A list to control which vertices have been visited.
+        :param distances: List used to store the minimum distances for each vertex.
+        :param previous: The predecessor vertex of the current vertex.
+        :return: The shortest path from start to target.
+        """
 
         if not visited:
             visited = list()
