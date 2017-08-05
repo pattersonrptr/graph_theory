@@ -8,6 +8,7 @@ Pros: Quick and uses less space for sparse graphs.
 Cons: It's slow for dense graphs. """
 
 import math
+import re
 
 from collections import defaultdict
 
@@ -20,17 +21,17 @@ class Vertex:
     def __init__(self, name):
         """
         Receives the name of the vertex and creates a list of neighbors.
-
         :param name: The vertex' name
         """
 
         self.name = str(name)
         self.neighbors = defaultdict(list)
+        self.in_neighbors = defaultdict(list)
+        self.out_neighbors = defaultdict(list)
 
     def __str__(self):
         """
         Representation of the vertex in the form of a string as its name.
-
         :return: The vertex' name
         """
 
@@ -39,35 +40,32 @@ class Vertex:
     def __repr__(self):
         """
         Detailed representation of the Vertex object in the form of a string.
-
         :return: The vertex' name
         """
 
-        return 'Vertex(%r, %r)' % (self.name, self.neighbors)
+        return 'Vertex(%r, %r)' % (self.name, self.in_neighbors)
 
-    def add_neighbor(self, v, weight=math.inf):
+    def add_neighbor(self, v, weight=math.inf, edge_dir=None):
         """
         Adds a new neighbor (adjacent vertex) to the neighbors list.
-
         :param v: The new neighbor
         :param weight: The weight of the edge connecting the neighbor to the vertex in question,
                        if not informed, assumes the infinite value.
+        :param edge_dir: The edge direction or None for undirected graphs.
         """
 
-        # if v not in self.neighbors:
-        #     self.neighbors[v] = weight
+        if edge_dir == "in":
+            self.in_neighbors[v].append(weight)
+        elif edge_dir == "out":
+            self.out_neighbors[v].append(weight)
+        else:
+            self.neighbors[v].append(weight)
 
-        self.neighbors[v].append(weight)
-
-    @property
-    def degree(self):
-        """
-        Returns the degree of the vertex.
-
-        :return: The vertex' degree
-        """
-
-        return len(self.neighbors)
+    def get_neighbors(self):
+        if self.out_neighbors:
+            return self.out_neighbors
+        else:
+            return self.neighbors
 
 
 class Graph(dict):
@@ -85,7 +83,7 @@ class Graph(dict):
         super(Graph, self).__init__()
 
         self.name = name
-        self.is_directed = is_directed
+        self._is_directed = is_directed
 
     def __str__(self):
         """
@@ -97,14 +95,20 @@ class Graph(dict):
         str_g = ''
 
         for key in sorted(list(self.keys())):
-            str_g += key + ' --> ' + str(self[key].neighbors) + '\n'
+            # str_g += key + ' --> ' + str(self[key].get_neighbors()) + '\n'
+            str_g += key + ' → '
+            str_list = ''
+            for vertex in [(k, v) for k, v in self[key].get_neighbors().items()]:
+                str_list += re.sub('[()]', '', str(vertex)) + ' → '
+                str_list = re.sub("',", "':", str_list)
+                str_list = re.sub("'", '', str_list)
+            str_g += (str_list[:-2] if str_list else 'None') + '\n'
 
         return str_g
 
     def add_vertex(self, vertex):
         """
         Adds a new vertex to the graph.
-
         :param vertex: The vertex to be added. It can be a string, an integer, or an instance of Vertex.
         :return: True if it have succeeded in adding the new vertex or False otherwise.
         """
@@ -140,24 +144,27 @@ class Graph(dict):
                         break
             self.pop(vertex)
 
-    def add_edge(self, u, v, weight=math.inf):
+    def add_edge(self, u, v=None, weight=math.inf):
         """
         Adds an edge between two vertices of the graph.
         Optionally adds a weight to the edge.
-
         :param u: The first vertex
         :param v: The second vertex
         :param weight: The weight of the edge, if not defined, assumes the infinite value.
         :return: True if it have succeeded in adding the edge or False otherwise.
         """
 
-        # TODO Permitir passar só um vértice para Loop nele mesmo
+        edge_in, edge_out = ("in", "out") if self._is_directed else (None, None)
+
+        if not v:
+            v = u
+
         if u in self and v in self:
             for key, value in self.items():
                 if key == u:
-                    value.add_neighbor(v, weight)
-                if key == v and not self.is_directed:
-                    value.add_neighbor(u, weight)
+                    value.add_neighbor(v, weight, edge_out)
+                if key == v:
+                    value.add_neighbor(u, weight, edge_in)
             return True
         else:
             return False
@@ -165,7 +172,6 @@ class Graph(dict):
     def rm_edge(self, v, u):
         """
         Removes the edge between the received vertices if it exists.
-
         :param v: The first vertex
         :param u: The second vertex
         """
@@ -194,7 +200,7 @@ class Graph(dict):
         found.add(start)
 
         if len(found) != len(vertices):
-            for v in self[start].neighbors:
+            for v in self[start].get_neighbors():
                 if v not in found:
                     if self.is_connected(found, v):
                         return True
@@ -202,24 +208,6 @@ class Graph(dict):
             return True
 
         return False
-
-    def degree(self, vertex):
-        """
-        Returns the vertex degree
-        :param vertex: A Vertex
-        :return: Integer for the vertex degree
-        """
-        if isinstance(vertex, Vertex):
-            vertex = vertex.name
-
-        v_degree = 0
-
-        for v in self:
-            for u in self[v].neighbors:
-                if u == vertex:
-                    v_degree += len(self[v].neighbors[u])
-
-        return v_degree
 
     @property
     def min_degree(self):
@@ -255,6 +243,27 @@ class Graph(dict):
             if degree > max_degree:
                 max_degree = degree
         return max_degree
+
+    def degree(self, vertex):
+        if isinstance(vertex, Vertex):
+            vertex = vertex.name
+
+        v_degree = 0
+
+        for v in self:
+            if not self._is_directed:
+                for u in self[v].neighbors:
+                    if u == vertex:
+                        v_degree += len(self[v].neighbors[u])
+            else:
+                for u in self[v].in_neighbors:
+                    if u == vertex:
+                        v_degree += len(self[v].in_neighbors[u])
+                for u in self[v].out_neighbors:
+                    if u == vertex:
+                        v_degree += len(self[v].out_neighbors[u])
+
+        return v_degree
 
     @property
     def density(self):
@@ -312,6 +321,7 @@ class Graph(dict):
     @staticmethod
     def erdoes_gallai(d_sequence):
         """
+        Check if it's a simple graph
         The Erdös-Gallai Theorem states that the sequence (di) i = 1, ..., n being di >= di + 1
         is a degree sequence of a simple graph if the sum of the sequence is even and
         (d[i])i=1, ..., n <= k(k - 1) + min(d[i], k)i=k+1, .., n   for  k in {1, ..., n}
@@ -346,7 +356,7 @@ class Graph(dict):
         seq = list()
 
         for vertex in self:
-            seq.append(self[vertex].degree)
+            seq.append(self.degree(vertex))
 
         seq.sort(reverse=True)
 
@@ -359,12 +369,12 @@ class Graph(dict):
 
         :return: The isolated vertices list or an empty list if there isn't any isolated vertex.
         """
-        # TODO corrigir bug.
-        # TODO O método considera um vétice sem vizinhos como isolado mas, se ele tem arestas incidentes não é isolado
         isolated = list()
 
         for v in self:
-            if not self[v].neighbors:
+            if self._is_directed and not self[v].out_neighbors and not self[v].in_neighbors:
+                isolated.append(v)
+            elif not self._is_directed and not self[v].neighbors:
                 isolated.append(v)
 
         return isolated
@@ -390,7 +400,7 @@ class Graph(dict):
         # visited = list()
 
         for v in self:
-            for neighbor in self[v].neighbors:
+            for neighbor in self[v].get_neighbors():
                 # if {v, neighbor} not in visited:
                     # visited.append(set((v, neighbor)))    # Ignore duplicates
                     # yield(v, neighbor)
@@ -415,7 +425,7 @@ class Graph(dict):
                 return visited + [current]
 
             if current not in visited:
-                queue.extend(set(self[current].neighbors) - set(visited))
+                queue.extend(set(self[current].get_neighbors()) - set(visited))
                 visited += [current]
         return None
 
@@ -447,7 +457,7 @@ class Graph(dict):
 
         for v in start:
             #  Does not consider neighbors that are vertices already visited.
-            neighbors = [u for u in self[v].neighbors if u not in visited]
+            neighbors = [u for u in self[v].get_neighbors() if u not in visited]
             # List of vertices of the same level, without considering repeated vertices.
             same_level_nodes.extend([u for u in neighbors if u not in same_level_nodes])
 
@@ -468,7 +478,7 @@ class Graph(dict):
             current, path = queue.pop(0)
             if current == target:
                 yield path
-            for vertex in set(self[current].neighbors) - set(path):
+            for vertex in set(self[current].get_neighbors()) - set(path):
                 queue.extend([(vertex, path + [vertex])])
 
     # Depth-First Search Methods ==============================================
@@ -491,7 +501,7 @@ class Graph(dict):
 
             if current not in visited:
                 visited.append(current)
-                stack.extend(set(self[current].neighbors) - set(visited))
+                stack.extend(set(self[current].get_neighbors()) - set(visited))
 
         return None
 
@@ -510,7 +520,7 @@ class Graph(dict):
 
         visited.append(start)
 
-        for v in set(self[start].neighbors) - set(visited):
+        for v in set(self[start].get_neighbors()) - set(visited):
 
             if target not in visited:
                 self.r_dfs(v, target, visited)
@@ -536,14 +546,13 @@ class Graph(dict):
         if start == target:
             yield visited
 
-        for vertex in [x for x in self[start].neighbors if x not in visited]:
+        for vertex in [x for x in self[start].get_neighbors() if x not in visited]:
             for each_path in self.dfs_paths(vertex, target, visited + [vertex]):
                 yield each_path  # return the paths generator
 
     # ----------------------------------------------------------
 
     def dijkstra(self, start, target, visited=None, distances=None, previous=None):
-# TODO corrigir erro do dijkstra ao tentar buscar por um vértice que existe no grafo mas não é alcansável por ser isolado
 
         if not visited:
             visited = list()
@@ -553,9 +562,11 @@ class Graph(dict):
             previous = dict()
 
         if start not in self:
-            raise TypeError('Start vertex cannot be found in the graph.')
+            raise Exception('Start vertex cannot be found in the graph.')
         if target not in self:
-            raise TypeError('The target vertex does not exist in the graph.')
+            raise Exception('The target vertex does not exist in the graph.')
+        if not self[target].get_neighbors():
+            raise Exception('The target vertex is unreachable')
 
         if start == target:
             path = list()
@@ -566,14 +577,14 @@ class Graph(dict):
                 ant = previous.get(ant, None)
             path.reverse()
 
-            print('Smaller path: {}\nWeight: {}'.format(path, distances[target]))
+            return 'Smaller path: {}\nWeight: {}'.format(path, distances[target])
 
         else:
             if not visited:
                 distances[start] = 0
-            for neighbor in self[start].neighbors:
+            for neighbor in self[start].get_neighbors():
                 if neighbor not in visited:
-                    new_distance = distances[start] + float(min(self[start].neighbors[neighbor]))
+                    new_distance = distances[start] + float(min(self[start].get_neighbors()[neighbor]))
                     if new_distance < distances.get(neighbor, math.inf):
                         distances[neighbor] = new_distance
                         previous[neighbor] = start
@@ -587,54 +598,52 @@ class Graph(dict):
                     unvisited[k] = distances.get(k, math.inf)
             x = min(unvisited, key=unvisited.get)
 
-            self.dijkstra(x, target, visited, distances, previous)
+            return self.dijkstra(x, target, visited, distances, previous)
 
-
-        # TODO implementar:
-        '''
-        https://en.wikipedia.org/wiki/Directed_graph
-        Indegree and outdegree
-        Directed graph connectivity
-        eaf vertex
-        pendant edge
-        arestas paralelas                           OK
-        grafo direcionado e não-direcionado         OK
-        achar arestas incidentes a um grafo
-        mostar vertices adjacentes a um vertice
-        mostrar os adjacentes entre sí
-        mostrar arestas adjacentes
-        mostrar laços
-        verificar se é simples, sem arestas paralelas e laços
-        mostrar se é grafo completo
-        qtd de grafos distintos
-        se é grafo ciclo
-        é um ciclo  OBS grafo ciclo é aquele que é um circulo e não um ciclico que é aquele que possui um ou mais ciclos
-        é aciclico
-        is wheel vertex
-        se é grafo roda
-        se é grafo cubo
-        se é bipartido
-        se é bipartido completo
-        é grafo estrela?
-        complemento de um grafo
-        multigrafo
-        pseudografo
-        multigrafo dirigido
-        hipergrafo
-        valorado
-        is regular graph?
-        
-        imersível
-        subgrafo
-        grafo regular
-        matriz adjacencia dirigido e não dirigido
-        matriz incidencia
-        ver se são isomorfos
-        árvores e arvores geradoras
-        florestas \||||||
-        homromorfos
-        caminho euleriano e hamiltoniano
-        V. J. Havel (1955) e S. L. Hakimi
+    # TODO implementar:
+    '''
+    Indegree and outdegree                      OK
+    Directed graph connectivity                 OK
+    leaf vertex
+    pendant edge
+    arestas paralelas                           OK
+    grafo direcionado e não-direcionado         OK
+    achar arestas incidentes a um grafo
+    mostar vertices adjacentes a um vertice
+    mostrar os adjacentes entre sí
+    mostrar arestas adjacentes
+    mostrar laços
+    verificar se é simples, sem arestas paralelas e laços
+    mostrar se é grafo completo
+    qtd de grafos distintos
+    se é grafo ciclo
+    é um ciclo  OBS grafo ciclo é aquele que é um circulo e não um ciclico que é aquele que possui um ou mais ciclos
+    é aciclico
+    is wheel vertex
+    se é grafo roda
+    se é grafo cubo
+    se é bipartido
+    se é bipartido completo
+    é grafo estrela?
+    complemento de um grafo
+    multigrafo
+    pseudografo
+    multigrafo dirigido
+    hipergrafo
+    valorado
+    is regular graph?
+    
+    imersível
+    subgrafo
+    grafo regular
+    matriz adjacencia dirigido e não dirigido
+    matriz incidencia
+    ver se são isomorfos
+    árvores e arvores geradoras
+    florestas \||||||
+    homromorfos
+    caminho euleriano e hamiltoniano
+    V. J. Havel (1955) e S. L. Hakimi
 (1961) e S. A. Choudum.
 
-        '''
+    '''
